@@ -1,0 +1,8 @@
+services:
+  prod:
+    command: flask run
+    extends:
+      file: compose.yaml
+      service: app
+
+# docker compose -f production.yaml up -d

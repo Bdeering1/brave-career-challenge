@@ -1,0 +1,13 @@
+services:
+  app:
+    build: .
+    command: flask run --debug
+    ports:
+      - "8000:5000"
+    develop:
+      watch:
+        - action: sync
+          path: .
+          target: /app
+
+# docker compose up --watch --remove-orphans

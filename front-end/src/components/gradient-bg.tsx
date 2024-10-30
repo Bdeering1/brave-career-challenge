@@ -15,7 +15,7 @@ export default function GradientBackground() {
           }
         }
         .animate-gradient {
-          animation: gradient 5s ease infinite;
+          animation: gradient 15s ease infinite;
           background-size: 200vh 200vh;
         }
       `}</style>
