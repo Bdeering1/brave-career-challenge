@@ -1,8 +1,5 @@
-#!/usr/bin/env python3
-
-from flask import Flask, request, json
-
-app = Flask(__name__)
+from app import app
+from flask import request, json
 
 
 @app.route('/')
@@ -22,7 +19,3 @@ def scrape_url():
     )
     response.headers.add('Access-Control-Allow-Origin', '*')
     return response
-
-
-if __name__ == "__main__":
-    app.run(debug=True)
