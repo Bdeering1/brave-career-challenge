@@ -1,4 +1,4 @@
-from app import app
+from app import app, scraping
 from flask import request, json
 
 
@@ -10,10 +10,11 @@ def index():
 @app.route('/scrape')
 def scrape_url():
     url = request.args.get('url')
-    data = f"received request to scrape '{url}'"
+
+    data = scraping.scrape(url)
 
     response = app.response_class(
-        response=json.dumps(data),
+        response=json.dumps(f'{data}'),
         status=200,
         mimetype='application/json'
     )

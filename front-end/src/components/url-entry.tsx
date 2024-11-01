@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useState } from 'react'
 import { Search } from 'lucide-react'
 
 const API_ROUTE = '/scrape'
