@@ -1,4 +1,4 @@
-from app import app, scraping
+from app import app, prompt, scrape
 from flask import request, json
 
 
@@ -11,10 +11,11 @@ def index():
 def scrape_url():
     url = request.args.get('url')
 
-    data = scraping.scrape(url)
+    site_data = scrape.get_data(url)
+    res = prompt.get_question(site_data.name, site_data.description)
 
     response = app.response_class(
-        response=json.dumps(f'{data}'),
+        response=json.dumps(f'{res}'),
         status=200,
         mimetype='application/json'
     )
