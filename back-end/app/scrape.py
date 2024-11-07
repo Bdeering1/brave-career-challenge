@@ -1,19 +1,27 @@
 import re
 import subprocess
-from typing import NamedTuple
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import NoSuchElementException, TimeoutException, JavascriptException
 
 
-class ScrapeResults(NamedTuple):
+class ScrapeResults():
     name: str
     description: str
-    text: list[str]
+    success = True
+    status = 200
+
+    def __init__(self, name='', description='', success=True, status=200):
+        self.name = name
+        self.description = description
+        self.success = success
+        self.status = status
+
+    def __str__(self):
+        return f'{self.name}: {self.description}'
 
 
 def get_data(url):
@@ -23,7 +31,7 @@ def get_data(url):
     options.add_argument('--disable-gpu')
     options.add_argument('--disable-dev-shm-usage')
     options.add_argument('--disable-extensions')
-    options.add_argument("--disable-crash-reporter")
+    options.add_argument('--disable-crash-reporter')
     options.experimental_options['prefs'] = {
         'profile.default_content_settings': {
             'images': 2,
@@ -38,27 +46,45 @@ def get_data(url):
 
     service = Service(service_args=['--log-level=WARNING'], log_output=subprocess.STDOUT)
     driver = webdriver.Chrome(service=service, options=options)
-    driver.get(url)
 
+    try:
+        driver.set_page_load_timeout(10)
+        driver.get(url)
+    except TimeoutException:
+        return ScrapeResults(
+            description='Error: Page load timed out',
+            success=False,
+            status=504
+        )
+
+    ensure_page_loaded(driver)
     site_name = find_name(driver, url)
     site_desc = find_desc(driver)
-    text_segments = scrape_text(driver)
 
     driver.quit()
 
-    return ScrapeResults(site_name, site_desc, text_segments)
+    if site_name == 'Just a moment...':
+        return ScrapeResults(
+            description='Error: Blocked by site security (Cloudflare)',
+            success=False,
+            status=500
+        )
+
+    return ScrapeResults(site_name, site_desc)
 
 
-def scrape_text(driver):
-    text_element_selector = 'h1, h2, h3, h4, h5, h6, p, li, dt, dd, th, td, a, pre, span'
-    text_elements = driver.find_elements(By.CSS_SELECTOR, text_element_selector)
+def ensure_page_loaded(driver):
+    await_script_condition(driver, 'jQuery.active == 0')
+    await_script_condition(driver, 'angular.element(document).injector().get("$http").pendingRequests.length) === 0')
 
-    text_segments = []
-    for e in text_elements:
-        if len(e.text) != 0:
-            text_segments.append(e.text)
 
-    return text_segments
+def await_script_condition(driver, script):
+    wait = WebDriverWait(driver, timeout=1.5, poll_frequency=0.3)
+
+    try:
+        wait.until(lambda d: driver.execute_script(f'return {script}'))
+    except (JavascriptException, TimeoutException):
+        pass
 
 
 def find_name(driver, url):
