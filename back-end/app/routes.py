@@ -13,6 +13,7 @@ def scrape_url():
     start = time.time()
 
     url = request.args.get('url')
+    scrape_only = request.args.get('scrape-only') is not None
 
     scrape_res = scrape.get_data(url)
     if not scrape_res.success:
@@ -22,13 +23,16 @@ def scrape_url():
             mimetype='application/json'
         )
 
-    res = ''  # prompt.get_question(site_data.name, site_data.description)
+    if scrape_only:
+        res = scrape_res
+    else:
+        res = prompt.get_question(scrape_res.name, scrape_res.description, scrape_res.offerings)
 
     elapsed = time.time() - start
-    print(f'response time: {elapsed}', flush=True)
+    print(f'Response time: {elapsed}', flush=True)
 
     response = app.response_class(
-        response=json.dumps(f'{scrape_res.name}: {scrape_res.description} {res}'),
+        response=json.dumps(f'{res}'),
         status=200,
         mimetype='application/json'
     )

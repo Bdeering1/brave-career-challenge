@@ -11,17 +11,19 @@ from selenium.common.exceptions import NoSuchElementException, TimeoutException,
 class ScrapeResults():
     name: str
     description: str
+    offerings: list[str]
     success = True
     status = 200
 
-    def __init__(self, name='', description='', success=True, status=200):
+    def __init__(self, name='', description='', offerings=[], success=True, status=200):
         self.name = name
         self.description = description
+        self.offerings = offerings
         self.success = success
         self.status = status
 
     def __str__(self):
-        return f'{self.name}: {self.description}'
+        return f'{self.name}: {self.description} Offerings: {self.offerings}'
 
 
 def get_data(url):
@@ -32,6 +34,7 @@ def get_data(url):
     options.add_argument('--disable-dev-shm-usage')
     options.add_argument('--disable-extensions')
     options.add_argument('--disable-crash-reporter')
+    options.add_argument('--start-maximized')
     options.experimental_options['prefs'] = {
         'profile.default_content_settings': {
             'images': 2,
@@ -46,9 +49,9 @@ def get_data(url):
 
     service = Service(service_args=['--log-level=WARNING'], log_output=subprocess.STDOUT)
     driver = webdriver.Chrome(service=service, options=options)
+    driver.set_page_load_timeout(12)
 
     try:
-        driver.set_page_load_timeout(10)
         driver.get(url)
     except TimeoutException:
         return ScrapeResults(
@@ -58,19 +61,22 @@ def get_data(url):
         )
 
     ensure_page_loaded(driver)
+    page_links = gather_links(driver)
     site_name = find_name(driver, url)
-    site_desc = find_desc(driver)
+    site_desc = find_desc(driver, page_links)
+    site_offerings = find_offerings(driver, page_links)
 
     driver.quit()
 
     if site_name == 'Just a moment...':
         return ScrapeResults(
+            name=name_from_url(url),
             description='Error: Blocked by site security (Cloudflare)',
             success=False,
             status=500
         )
 
-    return ScrapeResults(site_name, site_desc)
+    return ScrapeResults(site_name, site_desc, site_offerings)
 
 
 def ensure_page_loaded(driver):
@@ -87,6 +93,13 @@ def await_script_condition(driver, script):
         pass
 
 
+def gather_links(driver):
+    try:
+        return driver.find_elements(By.TAG_NAME, 'a')
+    except NoSuchElementException:
+        return []
+
+
 def find_name(driver, url):
     name = ''
     try:
@@ -101,16 +114,6 @@ def find_name(driver, url):
     return name
 
 
-def find_desc(driver):
-    try:
-        el = driver.find_element(By.CSS_SELECTOR, 'meta[name="description"]')
-        desc = el.get_attribute('content')
-    except NoSuchElementException:
-        desc = ''
-
-    return desc
-
-
 def name_from_url(url):
     matches = re.findall(r'[\w\d]+\.', url)
     if not matches:
@@ -118,3 +121,47 @@ def name_from_url(url):
 
     name = matches[-1][:-1]
     return name
+
+
+def find_desc(driver, page_links):
+    try:
+        el = driver.find_element(By.CSS_SELECTOR, 'meta[name="description"], meta[name="Description"]')
+        desc = el.get_attribute('content')
+    except NoSuchElementException:
+        desc = ''
+
+    if len(desc) == 0:
+        desc = desc_from_about(driver, page_links)
+
+    return desc
+
+
+def desc_from_about(driver, page_links):
+    try:
+        about_link = next('About' in a.get_attribute('innerText') for a in page_links)
+        driver.get(about_link.get_attribute('href'))
+        first_title = driver.find_element(By.CSS_SELECTOR, 'h1, h2, h3, h4, h5, h6')
+    except (StopIteration, NoSuchElementException, TimeoutException):
+        return ''
+
+    return first_title.get_attribute('innerText')
+
+
+def find_offerings(driver, page_links):
+    regexp = re.compile(r'(Products)|(Services)|(Solutions)|(Store)', re.IGNORECASE)
+    not_selectors = ':not(header *):not(nav *):not(aside *):not([class*="breadcrumb"])'
+
+    try:
+        offerings_link = next(a for a in page_links if regexp.match(get_text(a)))
+        driver.get(offerings_link.get_attribute('href'))
+        offering_list = driver.find_element(By.CSS_SELECTOR, f'ul:not([role=listbox]){not_selectors}, [role="list"]{not_selectors}')
+    except (StopIteration, NoSuchElementException, TimeoutException):
+        return []
+
+    children = offering_list.find_elements(By.CSS_SELECTOR, '*')
+    child_text = list(set(get_text(c) for c in children))
+    return [el for el in child_text if el != '']
+
+
+def get_text(element):
+    return element.get_attribute('innerText').strip(' \t\r\n')
