@@ -1,36 +1,43 @@
-import { useState } from 'react'
+import { useState, ChangeEventHandler } from 'react'
 import { Search } from 'lucide-react'
-import { useAppDispatch } from '../state/hooks'
-import { update } from '../state/questionSlice'
+import { useAppSelector, useAppDispatch } from '../state/hooks'
+import { load, hide, update, QuestionStatus } from '../state/questionSlice'
 
 const API_ROUTE = '/scrape'
 
 export default function UrlEntry() {
   const [inputUrl, setUrl] = useState('')
-  const dispatch = useAppDispatch();
+  const status = useAppSelector(state => state.question.status)
+  const dispatch = useAppDispatch()
+
+  const hideFeedback = () => dispatch(hide())
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setUrl('');
+    e.preventDefault()
+    setUrl('')
+    dispatch(load())
 
-    const baseUrl = import.meta.env.VITE_API_ROOT;
+    const baseUrl = import.meta.env.VITE_API_ROOT
     const endpoint = new URL(API_ROUTE, baseUrl)
-    endpoint.searchParams.append('url', inputUrl);
+    endpoint.searchParams.append('url', inputUrl)
 
     try {
       const res = await fetch(endpoint)
-      if (!res.ok) throw new Error(`Response status: ${res.status}`);
+      if (!res.ok) throw new Error(`Response status: ${res.status}`)
 
-      const json = await res.json();
-      console.log(json);
+      const json = await res.json()
+      console.log(json)
       dispatch(update(json))
     } catch (err: unknown) {
-      console.error((err as Error).message);
+      console.error((err as Error).message)
     }
   }
 
   return (
-    <div className="w-full max-w-md mx-auto p-4">
+    <div
+      onFocus={() => hideFeedback()}
+      className={`w-full max-w-md mx-auto p-4 ${status === QuestionStatus.Hidden ||  status === QuestionStatus.Complete ? '' : 'hidden'}`}
+    >
       <form onSubmit={handleSubmit} className="relative">
         <input
           type="url"
