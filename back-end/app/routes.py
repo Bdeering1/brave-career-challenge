@@ -32,7 +32,7 @@ def scrape_url():
     print(f'Response time: {elapsed}', flush=True)
 
     response = app.response_class(
-        response=json.dumps(f'{res}'),
+        response=json.dumps(res.__dict__),
         status=200,
         mimetype='application/json'
     )

@@ -1,10 +1,13 @@
 import { useState } from 'react'
 import { Search } from 'lucide-react'
+import { useAppDispatch } from '../state/hooks'
+import { update } from '../state/questionSlice'
 
 const API_ROUTE = '/scrape'
 
 export default function UrlEntry() {
   const [inputUrl, setUrl] = useState('')
+  const dispatch = useAppDispatch();
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -20,6 +23,7 @@ export default function UrlEntry() {
 
       const json = await res.json();
       console.log(json);
+      dispatch(update(json))
     } catch (err: unknown) {
       console.error((err as Error).message);
     }
@@ -33,7 +37,7 @@ export default function UrlEntry() {
           value={inputUrl}
           onChange={(e) => setUrl(e.target.value)}
           placeholder="Enter URL"
-          className="w-full px-4 py-2 pr-10 rounded-full bg-white bg-opacity-20 backdrop-blur-sm border border-white border-opacity-30 text-white placeholder-white placeholder-opacity-70 focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50 transition-all duration-300 ease-in-out"
+          className="w-full px-4 py-2 pr-10 rounded-lg bg-white bg-opacity-20 backdrop-blur-sm border border-white border-opacity-30 text-white placeholder-white placeholder-opacity-70 focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50 transition-all duration-300 ease-in-out"
           required
         />
         <button
