@@ -1,26 +1,25 @@
-import re
-import subprocess
+from app import util
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.common.exceptions import NoSuchElementException, TimeoutException, JavascriptException
+from dataclasses import dataclass, field
+import subprocess
+import re
 
 
-class ScrapeResults():
-    name: str
-    description: str
-    offerings: list[str]
+@dataclass
+class SiteInfo():
+    name: str = ''
+    description: str = ''
+    offerings: list[str] = field(default_factory=list)
+
+
+class ScrapeResults(SiteInfo):
     success = True
     status = 200
-
-    def __init__(self, name='', description='', offerings=[], success=True, status=200):
-        self.name = name
-        self.description = description
-        self.offerings = offerings
-        self.success = success
-        self.status = status
 
     def __str__(self):
         return f'{self.name}: {self.description} Offerings: {self.offerings}'
@@ -70,7 +69,7 @@ def get_data(url):
 
     if site_name == 'Just a moment...':
         return ScrapeResults(
-            name=name_from_url(url),
+            name=util.name_from_url(url),
             description='Error: Blocked by site security (Cloudflare)',
             success=False,
             status=500
@@ -109,17 +108,8 @@ def find_name(driver, url):
         pass
 
     if len(name) == 0:
-        name = name_from_url(url)
+        name = util.name_from_url(url)
 
-    return name
-
-
-def name_from_url(url):
-    matches = re.findall(r'[\w\d]+\.', url)
-    if not matches:
-        return ''
-
-    name = matches[-1][:-1]
     return name
 
 

@@ -1,5 +1,5 @@
-from app import app, prompt, scrape
-from flask import request, json
+from app import app, db, prompt, scrape, util
+from flask import request
 import time
 
 
@@ -13,28 +13,44 @@ def scrape_url():
     start = time.time()
 
     url = request.args.get('url')
-    scrape_only = request.args.get('scrape-only') is not None
+    db_test = request.args.get('db-test') is not None
+    force_prompt = request.args.get('force-prompt') is not None
 
-    scrape_res = scrape.get_data(url)
-    if not scrape_res.success:
-        return app.response_class(
-            response=json.dumps(scrape_res.description),
-            status=scrape_res.status,
-            mimetype='application/json'
-        )
+    url_root = util.url_root(url)
+    if url_root is None:
+        return util.json_response('Invalid URL', 400)
 
-    if scrape_only:
-        res = scrape_res
-    else:
-        res = prompt.get_question(scrape_res.name, scrape_res.description, scrape_res.offerings)
+    conn, cur = db.connect()
+    db_entry = db.get_site_data(cur, url_root)
+    if db_entry is not None:
+        site_info, question = db_entry
+
+    # Only check for db entry
+    if db_test:
+        db.close(conn, cur)
+
+        if db_entry is None:
+            return util.json_response(f'No entry for {url}', 200)
+        return util.json_response(question.__dict__, 200)
+
+    # No site entry found, scrape site
+    if db_entry is None:
+        site_info = scrape.get_data(url)
+
+        if not site_info.success:
+            db.close()
+            return util.json_response(site_info.description, site_info.status)
+
+        db.create_site(cur, url_root, site_info)
+
+    # No site entry found, or re-prompt requested
+    if db_entry is None or force_prompt:
+        question = prompt.get_question(site_info.name, site_info.description, site_info.offerings)
+        db.update_question(cur, url_root, question)
+
+    db.close(conn, cur)
 
     elapsed = time.time() - start
     print(f'Response time: {elapsed}', flush=True)
 
-    response = app.response_class(
-        response=json.dumps(res.__dict__),
-        status=200,
-        mimetype='application/json'
-    )
-    response.headers.add('Access-Control-Allow-Origin', '*')
-    return response
+    return util.json_response(question.__dict__, 200)

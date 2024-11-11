@@ -1,11 +1,6 @@
 from app import config
-from pydantic import BaseModel
+from app.db import SurveyQuestion
 from openai import OpenAI
-
-
-class SurveyQuestion(BaseModel):
-    prompt: str
-    options: list[str]
 
 
 def get_question(name, description, offerings):
