@@ -25,7 +25,7 @@ def url_root(url):
     root = match.group(0)
 
     root.removeprefix('www.')
-    root.removesuffix('/')
+    root.strip('/')
 
     return root
 
