@@ -3,11 +3,11 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-DB_NAME = environ.get('DB_NAME')
-DB_USER = environ.get('DB_USER')
-DB_PASSWORD = environ.get('DB_PASSWORD')
-DB_HOST = environ.get('DB_HOST')
-DB_PORT = environ.get('DB_PORT')
+POSTGRES_DB = environ.get('POSTGRES_DB')
+POSTGRES_USER = environ.get('POSTGRES_USER')
+POSTGRES_PASSWORD = environ.get('POSTGRES_PASSWORD')
+POSTGRES_HOST = environ.get('POSTGRES_HOST')
+POSTGRES_PORT = environ.get('POSTGRES_PORT')
 
 OPENAI_API_KEY = environ.get('OPENAI_API_KEY')
 ORGANIZATION_ID = environ.get('ORGANIZATION_ID')

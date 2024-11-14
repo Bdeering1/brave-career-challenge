@@ -1,8 +1,0 @@
-services:
-  prod:
-    command: gunicorn -w 2 -b :5000 'app:app'
-    extends:
-      file: compose.yaml
-      service: app
-
-# docker compose -f production.yaml up --build -d

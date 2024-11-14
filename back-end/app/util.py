@@ -17,8 +17,6 @@ def url_root(url):
     regexp = re.compile(r'(www\.)?([\w\d-]+\.)+[\w]+(\/|$)')
     match = regexp.search(url)
 
-    print(match, flush=True)
-
     if not match:
         return None
 

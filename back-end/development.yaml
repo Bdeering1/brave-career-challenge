@@ -1,0 +1,17 @@
+services:
+  db:
+    extends:
+      file: docker-compose.yaml
+      service: db
+  dev:
+    command: flask run --debug
+    develop:
+      watch:
+        - action: sync
+          path: .
+          target: /app
+    extends:
+      file: docker-compose.yaml
+      service: app
+
+# docker compose -f development.yaml up --watch --remove-orphans --build -d

@@ -44,7 +44,7 @@ def scrape_url():
         db.create_site(cur, url_root, site_info)
 
     # No site entry found, or re-prompt requested
-    if db_entry is None or force_prompt:
+    if db_entry is None or question is None or force_prompt:
         question = prompt.get_question(site_info.name, site_info.description, site_info.offerings)
         db.update_question(cur, url_root, question)
 

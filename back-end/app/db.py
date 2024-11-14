@@ -11,11 +11,11 @@ class SurveyQuestion(BaseModel):
 
 def connect():
     conn = psycopg2.connect(
-        database=config.DB_NAME,
-        user=config.DB_USER,
-        password=config.DB_PASSWORD,
-        host=config.DB_HOST,
-        port=config.DB_PORT
+        database=config.POSTGRES_DB,
+        user=config.POSTGRES_USER,
+        password=config.POSTGRES_PASSWORD,
+        host=config.POSTGRES_HOST,
+        port=config.POSTGRES_PORT
     )
     cur = conn.cursor()
 
