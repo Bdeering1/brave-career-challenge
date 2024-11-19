@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 
-FROM --platform=linux/amd64 python:3.12-slim-bookworm
+FROM --platform=linux/amd64 public.ecr.aws/docker/library/python:3.12-slim-bookworm
 
 RUN apt-get update && apt-get install -y gnupg wget chromium unzip
 

@@ -1,0 +1,21 @@
+{
+  "prod": {
+    "awscloudformation": {
+      "AuthRoleName": "amplify-bravecareerchallenge-prod-a913a-authRole",
+      "UnauthRoleArn": "arn:aws:iam::216989141517:role/amplify-bravecareerchallenge-prod-a913a-unauthRole",
+      "AuthRoleArn": "arn:aws:iam::216989141517:role/amplify-bravecareerchallenge-prod-a913a-authRole",
+      "Region": "us-east-1",
+      "DeploymentBucketName": "amplify-bravecareerchallenge-prod-a913a-deployment",
+      "UnauthRoleName": "amplify-bravecareerchallenge-prod-a913a-unauthRole",
+      "StackName": "amplify-bravecareerchallenge-prod-a913a",
+      "StackId": "arn:aws:cloudformation:us-east-1:216989141517:stack/amplify-bravecareerchallenge-prod-a913a/95e4b5a0-a6b5-11ef-8bf2-126e950b695d",
+      "AmplifyAppId": "d1znboaa59t9d8",
+      "NetworkStackS3Url": "https://s3.amazonaws.com/amplify-bravecareerchallenge-prod-a913a-deployment/amplify-cfn-templates/networkingStackTemplate.json"
+    },
+    "categories": {
+      "api": {
+        "flask": {}
+      }
+    }
+  }
+}

@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+  db:
+    image: public.ecr.aws/docker/library/postgres
+    restart: always
+    env_file: .env
+    volumes:
+      - ./dataset:/docker-entrypoint-initdb.d
+    ports:
+      - '5432:5432'
+    secrets:
+      - POSTGRES_PASSWORD
+  app:
+    build: .
+    command: [ 'gunicorn', '-w', '2', '-b', ':5000', 'app:app' ]
+    ports:
+      - "5000:5000"
+    environment:
+      FLASK_RUN_HOST: 0.0.0.0
+      ORGANIZATION_ID: org-PNdz9Qx1KJ9LqZI9ya5aiRnm
+      PROJECT_ID: proj_QVsZ4rri27cg0C4zbgAykPsE 
+      POSTGRES_DB: postgresDB
+      POSTGRES_USER: admin
+      POSTGRES_HOST: db
+      POSTGRES_PORT: '5432'
+    secrets:
+      - POSTGRES_PASSWORD
+      - OPENAI_API_KEY
+
+secrets:
+  POSTGRES_PASSWORD:
+    file: ../secrets/.secret-postgres-password
+  OPENAI_API_KEY:
+    file: ../secrets/.secret-openai-api-key
+
+# docker compose up --build -d
