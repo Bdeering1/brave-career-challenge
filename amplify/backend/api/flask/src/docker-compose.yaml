@@ -4,11 +4,14 @@ services:
   db:
     image: public.ecr.aws/docker/library/postgres
     restart: always
-    env_file: .env
     volumes:
       - ./dataset:/docker-entrypoint-initdb.d
     ports:
       - '5432:5432'
+    environment:
+      POSTGRES_DB: postgresDB
+      POSTGRES_USER: admin
+      POSTGRES_PORT: '5432'
     secrets:
       - POSTGRES_PASSWORD
   app:
@@ -22,7 +25,7 @@ services:
       PROJECT_ID: proj_QVsZ4rri27cg0C4zbgAykPsE 
       POSTGRES_DB: postgresDB
       POSTGRES_USER: admin
-      POSTGRES_HOST: db
+      POSTGRES_HOST: localhost
       POSTGRES_PORT: '5432'
     secrets:
       - POSTGRES_PASSWORD

@@ -3,6 +3,8 @@ services:
     extends:
       file: docker-compose.yaml
       service: db
+    environment:
+      POSTGRES_PASSWORD_FILE: /run/secrets/POSTGRES_PASSWORD
   dev:
     command: flask run --debug
     develop:
@@ -14,4 +16,10 @@ services:
       file: docker-compose.yaml
       service: app
 
-# docker compose -f development.yaml up --watch --remove-orphans --build -d
+secrets:
+  POSTGRES_PASSWORD:
+    file: ../secrets/.secret-postgres-password
+  OPENAI_API_KEY:
+    file: ../secrets/.secret-openai-api-key
+
+# docker compose -f development.yaml up --watch --remove-orphans --build

@@ -122,6 +122,20 @@
           {
             "Command": [],
             "EntryPoint": [],
+            "Environment": [
+              {
+                "Name": "POSTGRES_DB",
+                "Value": "postgresDB"
+              },
+              {
+                "Name": "POSTGRES_USER",
+                "Value": "admin"
+              },
+              {
+                "Name": "POSTGRES_PORT",
+                "Value": "5432"
+              }
+            ],
             "Essential": true,
             "Image": "public.ecr.aws/docker/library/postgres",
             "LogConfiguration": {
@@ -194,7 +208,7 @@
               },
               {
                 "Name": "POSTGRES_HOST",
-                "Value": "db"
+                "Value": "localhost"
               },
               {
                 "Name": "POSTGRES_PORT",
@@ -551,7 +565,7 @@
         "Cluster": {
           "Ref": "NetworkStackClusterName"
         },
-        "DesiredCount": 0,
+        "DesiredCount": 1,
         "LaunchType": "FARGATE",
         "NetworkConfiguration": {
           "AwsvpcConfiguration": {
@@ -2664,6 +2678,5 @@
         "states": "states.us-west-2.amazonaws.com"
       }
     }
-  },
-  "Description": "{\"createdOn\":\"Mac\",\"createdBy\":\"Amplify\",\"createdWith\":\"12.13.0\",\"stackType\":\"api-ElasticContainer\",\"metadata\":{\"whyContinueWithGen1\":\"Prefer not to answer\"}}"
+  }
 }

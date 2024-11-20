@@ -16,11 +16,17 @@ def scrape_url():
     db_test = request.args.get('db-test') is not None
     force_prompt = request.args.get('force-prompt') is not None
 
+    if url is None:
+        return util.json_response('No URL provided', 400)
+
     url_root = util.url_root(url)
     if url_root is None:
         return util.json_response('Invalid URL', 400)
 
     conn, cur = db.connect()
+    if conn is None:
+        return util.json_response('Internal server error', 500)
+
     db_entry = db.get_site_data(cur, url_root)
     if db_entry is not None:
         site_info, question = db_entry
