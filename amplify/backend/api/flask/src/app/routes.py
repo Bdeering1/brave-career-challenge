@@ -25,7 +25,7 @@ def scrape_url():
 
     conn, cur = db.connect()
     if conn is None:
-        return util.json_response('Internal server error', 500)
+        return util.json_response('Internal server error: failed to connect to DB', 500)
 
     db_entry = db.get_site_data(cur, url_root)
     if db_entry is not None:
@@ -44,7 +44,7 @@ def scrape_url():
         site_info = scrape.get_data(url)
 
         if not site_info.success:
-            db.close()
+            db.close(conn, cur)
             return util.json_response(site_info.description, site_info.status)
 
         db.create_site(cur, url_root, site_info)
@@ -52,6 +52,9 @@ def scrape_url():
     # No site entry found, or re-prompt requested
     if db_entry is None or question is None or force_prompt:
         question = prompt.get_question(site_info.name, site_info.description, site_info.offerings)
+        if question is None:
+            return util.json_response('Internal server error: failed to connect to ChatGPT', 500)
+
         db.update_question(cur, url_root, question)
 
     db.close(conn, cur)

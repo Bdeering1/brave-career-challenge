@@ -17,9 +17,10 @@ class SiteInfo():
     offerings: list[str] = field(default_factory=list)
 
 
+@dataclass
 class ScrapeResults(SiteInfo):
-    success = True
-    status = 200
+    success: bool = True
+    status: int = 200
 
     def __str__(self):
         return f'{self.name}: {self.description} Offerings: {self.offerings}'
@@ -48,7 +49,7 @@ def get_data(url):
 
     service = Service(service_args=['--log-level=WARNING'], log_output=subprocess.STDOUT)
     driver = webdriver.Chrome(service=service, options=options)
-    driver.set_page_load_timeout(12)
+    driver.set_page_load_timeout(30)
 
     try:
         driver.get(url)

@@ -3,7 +3,8 @@ from dotenv import load_dotenv
 
 
 def get_secret(name):
-    return environ.get(name) or open(f'/run/secrets/{name}').read().rstrip('\n')
+    secret = environ.get(name) or open(f'/run/secrets/{name}').read()
+    return secret.rstrip('\n')
 
 
 load_dotenv()

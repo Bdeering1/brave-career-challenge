@@ -6,10 +6,10 @@
   "javascript": {
     "framework": "react",
     "config": {
-      "SourceDir": "front-end/src",
-      "DistributionDir": "front-end/dist",
+      "SourceDir": "src",
+      "DistributionDir": "dist",
       "BuildCommand": "npm run build",
-      "StartCommand": "npm run start",
+      "StartCommand": "npm run preview",
       "ServerlessContainers": true
     }
   },

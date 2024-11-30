@@ -15,6 +15,12 @@
     "categories": {
       "api": {
         "flask": {}
+      },
+      "hosting": {
+        "amplifyhosting": {
+          "appId": "d1znboaa59t9d8",
+          "type": "manual"
+        }
       }
     }
   }

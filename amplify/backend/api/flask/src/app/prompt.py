@@ -1,6 +1,6 @@
 from app import config
 from app.db import SurveyQuestion
-from openai import OpenAI
+from openai import OpenAI, APIConnectionError
 
 
 def get_question(name, description, offerings):
@@ -20,19 +20,22 @@ def get_question(name, description, offerings):
 
     print(f'AI Prompt:\n{user_prompt}', flush=True)
 
-    completion = client.beta.chat.completions.parse(
-        model="gpt-4o-mini-2024-07-18",
-        messages=[
-            {
-                "role": "system",
-                "content": system_prompt
-            },
-            {
-                "role": "user",
-                "content": user_prompt
-            }
-        ],
-        response_format=SurveyQuestion
-    )
+    try:
+        completion = client.beta.chat.completions.parse(
+            model="gpt-4o-mini-2024-07-18",
+            messages=[
+                {
+                    "role": "system",
+                    "content": system_prompt
+                },
+                {
+                    "role": "user",
+                    "content": user_prompt
+                }
+            ],
+            response_format=SurveyQuestion
+        )
+    except APIConnectionError:
+        return None
 
     return completion.choices[0].message.parsed

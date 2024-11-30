@@ -16,7 +16,7 @@ export default function UrlEntry() {
   const hideFeedback = () => dispatch(hide())
 
   const sendRequest = async (url: string, force_prompt: boolean) => {
-    const baseUrl = import.meta.env.VITE_API_ROOT
+    const baseUrl = import.meta.env.PROD ? import.meta.env.VITE_API_ROOT : import.meta.env.VITE_API_ROOT_DEV
     const endpoint = new URL(API_ROUTE, baseUrl)
     endpoint.searchParams.append('url', url)
 
