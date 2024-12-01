@@ -3,7 +3,8 @@ import { RotateCw, Search } from 'lucide-react'
 import { Button } from "@/components/ui/button"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { useAppSelector, useAppDispatch } from '../state/hooks'
-import { load, hide, update, QuestionStatus } from '../state/questionSlice'
+import { load, hide, update, QuestionState, QuestionStatus } from '../state/questionSlice'
+import { ApiError, get } from 'aws-amplify/api'
 
 const API_ROUTE = '/scrape'
 
@@ -16,24 +17,64 @@ export default function UrlEntry() {
   const hideFeedback = () => dispatch(hide())
 
   const sendRequest = async (url: string, force_prompt: boolean) => {
-    const baseUrl = import.meta.env.PROD ? import.meta.env.VITE_API_ROOT : import.meta.env.VITE_API_ROOT_DEV
-    const endpoint = new URL(API_ROUTE, baseUrl)
-    endpoint.searchParams.append('url', url)
-
-    if (force_prompt)
-      endpoint.searchParams.append('force-prompt', '')
-
-    try {
-      const res = await fetch(endpoint)
-      const json = await res.json()
-      if (!res.ok) {
-        dispatch(hide())
-        throw new Error(`Response status: ${res.status} - ${json}`)
+    if (import.meta.env.PROD) { // hit production endpoint
+      interface QueryParams {
+        url: string,
+        [key: string]: string
       }
 
-      dispatch(update(json))
-    } catch (err: unknown) {
-      console.error((err as Error).message)
+      const queryParams: QueryParams = { url: url }
+      if (force_prompt)
+        queryParams['force-prompt'] = ''
+
+      const getOperation = get({
+        apiName: 'flask',
+        path: API_ROUTE,
+        options: {
+          queryParams
+        }
+      })
+
+      try {
+        const { body } = await getOperation.response;
+        const json = await body.json()
+
+        dispatch(update(json as unknown as QuestionState))
+      } catch (err: unknown) {
+        dispatch(hide())
+        if (err instanceof ApiError && err.response) {
+          const {
+            statusCode,
+            body
+          } = err.response;
+
+          console.error(`Response status: ${statusCode} - ${body}`);
+        }
+
+        console.error((err as Error).message)
+      }
+    } else { // hit local server
+      const baseUrl = import.meta.env.VITE_API_ROOT
+      const endpoint = new URL(API_ROUTE, baseUrl)
+      endpoint.searchParams.append('url', url)
+
+      if (force_prompt)
+        endpoint.searchParams.append('force-prompt', '')
+
+      try {
+        const res = await fetch(endpoint)
+        const json = await res.json()
+        if (!res.ok) {
+          dispatch(hide())
+          throw new Error(`Response status: ${res.status} - ${json}`)
+
+        }
+
+        dispatch(update(json))
+      } catch (err: unknown) {
+        dispatch(hide())
+        console.error((err as Error).message)
+      }
     }
   }
 
